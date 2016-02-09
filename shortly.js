@@ -53,14 +53,23 @@ function(req, res) {
   }
 });
 
+app.get('/users',
+function(req, res) {
+    Users.reset().fetch().then(function(user) {
+      res.send(200, user.models);
+    });
+});
+
 app.post('/signup',
 function(req, res) {
   console.log(req.body);
   var username = req.body.username;
   var password = req.body.password;
 
-  var user = new User({"username": username, "password": password});
+  var user = new User({"username": username});
+  user.hasher(password);
   console.log('user:', user);
+  console.log('hashed pass: ', password);
 
   user.save().then(function(newRow){
     console.log('newRow:', newRow.id);
