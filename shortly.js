@@ -76,6 +76,8 @@ function(req, res) {
 
   user.save().then(function(newRow){
     console.log('newRow:', newRow.id);
+    userAuthenticator = true;
+    res.redirect('index');
   }).catch(function(err){
     console.log('err:', err);
   });
@@ -151,9 +153,9 @@ app.post('/login', function(req, res){
               console.log('password doesnt match');
               // if not authenticated, notify user, clear out fields
             }
-         }
+        }
       });
-    };
+    }
   });
 
 });
