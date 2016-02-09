@@ -22,10 +22,11 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
+var userAuthenticator = false;
 
 app.get('/',
 function(req, res) {
-  if(!userAuthenticator()){
+  if(!userAuthenticator){
     res.redirect('/login');
   } else{
     res.render('index');
@@ -34,7 +35,7 @@ function(req, res) {
 
 app.get('/create',
 function(req, res) {
-  if(!userAuthenticator()){
+  if(!userAuthenticator){
     res.redirect('/login');
   } else{
     res.render('index');
@@ -43,13 +44,41 @@ function(req, res) {
 
 app.get('/links',
 function(req, res) {
-  if(!userAuthenticator()){
+  if(!userAuthenticator){
     res.redirect('/login');
   } else{
     Links.reset().fetch().then(function(links) {
       res.send(200, links.models);
     });
   }
+});
+
+app.post('/signup',
+function(req, res) {
+  console.log(req.body);
+  var username = req.body.username;
+  var password = req.body.password;
+
+  var user = new User({"username": username, "password": password});
+  console.log('user:', user);
+
+  user.save().then(function(newRow){
+    console.log('newRow:', newRow.id);
+  }).catch(function(err){
+    console.log('err:', err);
+  });
+/*    if(found){
+      res.send(200, found.attributes);
+    } else{
+      var user = new User({
+        username: username,
+      });
+      user.save().then(function(newUser){
+        User.add(newUser);
+        res.send(200, newUser);
+      });
+    }
+  });*/
 });
 
 app.post('/links',
@@ -92,6 +121,9 @@ function(req, res) {
 // If user reaches index page and not signed in, redirect
 // to '../views/login'
 //
+// add logout button
+//   redirects to login page
+//   sets userAuthenticator to false
 
 //function loggedIn(req, res, next) {
 /*    if (req.user) {
@@ -105,9 +137,27 @@ app.get('/login', function(req, res){
   res.render('login');
 });
 
-var userAuthenticator = function(){
-  return false;
-};
+app.post('/login', function(req, res){
+  var username = req.body.username;
+  var password = req.body.password;
+
+  new User({"username": username, "password": password}).fetch().then(function(found){
+    console.log('found:', found);
+    if(found){
+      console.log("user exists!!!!!");
+      userAuthenticator = true;
+    } else{
+      console.log('errrrror');
+    }
+  });
+
+});
+
+app.get('/signup', function(req, res){
+  res.render('signup');
+});
+
+
 
 
 /************************************************************/
