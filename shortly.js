@@ -34,7 +34,11 @@ function(req, res) {
 
 app.get('/create',
 function(req, res) {
-  res.render('index');
+  if(!userAuthenticator()){
+    res.redirect('/login');
+  } else{
+    res.render('index');
+  }
 });
 
 app.get('/links',
