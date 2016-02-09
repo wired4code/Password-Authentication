@@ -2,7 +2,7 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
-
+var bcrypt = require('bcrypt-nodejs');
 
 var db = require('./app/config');
 var Users = require('./app/collections/users');
@@ -24,6 +24,7 @@ app.use(express.static(__dirname + '/public'));
 
 var userAuthenticator = false;
 
+// redirects to login if not signed in, renders index if signed in
 app.get('/',
 function(req, res) {
   if(!userAuthenticator){
@@ -33,6 +34,7 @@ function(req, res) {
   }
 });
 
+// /create redirects to index page which has shorten as tab(/create)
 app.get('/create',
 function(req, res) {
   if(!userAuthenticator){
@@ -42,6 +44,7 @@ function(req, res) {
   }
 });
 
+//
 app.get('/links',
 function(req, res) {
   if(!userAuthenticator){
@@ -76,18 +79,7 @@ function(req, res) {
   }).catch(function(err){
     console.log('err:', err);
   });
-/*    if(found){
-      res.send(200, found.attributes);
-    } else{
-      var user = new User({
-        username: username,
-      });
-      user.save().then(function(newUser){
-        User.add(newUser);
-        res.send(200, newUser);
-      });
-    }
-  });*/
+
 });
 
 app.post('/links',
@@ -127,20 +119,7 @@ function(req, res) {
 /************************************************************/
 // Write your authentication routes here
 /************************************************************/
-// If user reaches index page and not signed in, redirect
-// to '../views/login'
-//
-// add logout button
-//   redirects to login page
-//   sets userAuthenticator to false
 
-//function loggedIn(req, res, next) {
-/*    if (req.user) {
-        next();
-    } else {
-        res.redirect('/login');
-    }
-}*/
 
 app.get('/login', function(req, res){
   res.render('login');
@@ -148,16 +127,33 @@ app.get('/login', function(req, res){
 
 app.post('/login', function(req, res){
   var username = req.body.username;
-  var password = req.body.password;
+  var inputPassword = req.body.password;
 
-  new User({"username": username, "password": password}).fetch().then(function(found){
-    console.log('found:', found);
-    if(found){
+  new User({username: username}).fetch().then(function(found){
+      console.log('found:' + found);
       console.log("user exists!!!!!");
-      userAuthenticator = true;
-    } else{
-      console.log('errrrror');
-    }
+
+      var dbPassword = found.attributes.password;
+      console.log('dbpassword is', dbPassword);
+
+    if(found){
+      console.log(found);
+      var passwordFound = bcrypt.compare(inputPassword, dbPassword, function(err, isMatch){
+        if(err){
+          console.log('compare error', err);
+        } else{
+          console.log('do they match?', isMatch);
+            if(isMatch) {
+              console.log('isMatch callback', isMatch);
+              userAuthenticator = true;
+              res.redirect('/index');
+            } else {
+              console.log('password doesnt match');
+              // if not authenticated, notify user, clear out fields
+            }
+         }
+      });
+    };
   });
 
 });

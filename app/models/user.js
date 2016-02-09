@@ -1,7 +1,7 @@
 var db = require('../config');
 var bcrypt = require('bcrypt-nodejs');
 var Promise = require('bluebird');
-var Salt = 5;
+var salt = 5;
 
 
 var User = db.Model.extend({
@@ -14,7 +14,7 @@ var User = db.Model.extend({
 
   hasher: function(pass){
     var self = this;
-/*    bcrypt.genSalt(Salt, function(err, salt){
+/*    bcrypt.genSalt(salt, function(err, salt){
       if(err){
         console.log('line 17 genSalt', err);
       }*/
@@ -23,10 +23,11 @@ var User = db.Model.extend({
           console.log('line 21 hash', err);
         }
         self.set('password', hash);
-        console.log('ha:shedPassword', hash);
+        console.log('hashedPassword:', hash);
       });
     // });
   }
+
 
 });
 
