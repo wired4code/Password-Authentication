@@ -11,6 +11,7 @@ var Links = require('./app/collections/links');
 var Link = require('./app/models/link');
 var Click = require('./app/models/click');
 
+
 var app = express();
 
 app.set('views', __dirname + '/views');
@@ -22,38 +23,43 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
-var userAuthenticator = false;
+// Implement sessions
+var session = require('express-session');
+app.use(session({
+  secret: 'secret cookie',
+  resave: false,
+  saveUninitialized: true,
+}));
+
+
+//var userAuthenticator = false;
 
 // redirects to login if not signed in, renders index if signed in
-app.get('/',
-function(req, res) {
-  if(!userAuthenticator){
+app.get('/', util.checkUser, function(req, res) {
+  //Error: Most middleware (like bodyParser) is no longer bundled with Express and must be installed separately. (!req.session.user)
+  /*if(!userAuthenticator){
+    console.log('no cookie found');
     res.redirect('/login');
-  } else{
+  } else{*/
     res.render('index');
-  }
 });
 
 // /create redirects to index page which has shorten as tab(/create)
-app.get('/create',
-function(req, res) {
-  if(!userAuthenticator){
+app.get('/create', util.checkUser, function(req, res) {
+/*  if(!userAuthenticator){
     res.redirect('/login');
-  } else{
+  } else{*/
     res.render('index');
-  }
 });
 
 //
-app.get('/links',
-function(req, res) {
-  if(!userAuthenticator){
+app.get('/links', util.checkUser,function(req, res) {
+  /*if(!userAuthenticator){
     res.redirect('/login');
-  } else{
+  } else{*/
     Links.reset().fetch().then(function(links) {
       res.send(200, links.models);
     });
-  }
 });
 
 app.get('/users',
@@ -76,12 +82,17 @@ function(req, res) {
 
   user.save().then(function(newRow){
     console.log('newRow:', newRow.id);
-    userAuthenticator = true;
-    res.redirect('index');
+    util.createSession(req, res, user);
+    //res.redirect('index');
   }).catch(function(err){
     console.log('err:', err);
   });
 
+});
+
+app.get('/logout', function(req, res) {
+
+  res.redirect('login');
 });
 
 app.post('/links',
@@ -147,8 +158,8 @@ app.post('/login', function(req, res){
           console.log('do they match?', isMatch);
             if(isMatch) {
               console.log('isMatch callback', isMatch);
-              userAuthenticator = true;
-              res.redirect('/index');
+              //res.render('index');
+              util.createSession(req, res, username);
             } else {
               console.log('password doesnt match');
               // if not authenticated, notify user, clear out fields

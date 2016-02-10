@@ -1,7 +1,7 @@
 var db = require('../config');
 var bcrypt = require('bcrypt-nodejs');
 var Promise = require('bluebird');
-var salt = 5;
+//var salt = 5;
 
 
 var User = db.Model.extend({
