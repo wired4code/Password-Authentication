@@ -32,31 +32,18 @@ app.use(session({
 }));
 
 
-//var userAuthenticator = false;
-
 // redirects to login if not signed in, renders index if signed in
 app.get('/', util.checkUser, function(req, res) {
-  //Error: Most middleware (like bodyParser) is no longer bundled with Express and must be installed separately. (!req.session.user)
-  /*if(!userAuthenticator){
-    console.log('no cookie found');
-    res.redirect('/login');
-  } else{*/
     res.render('index');
 });
 
 // /create redirects to index page which has shorten as tab(/create)
 app.get('/create', util.checkUser, function(req, res) {
-/*  if(!userAuthenticator){
-    res.redirect('/login');
-  } else{*/
     res.render('index');
 });
 
-//
+
 app.get('/links', util.checkUser,function(req, res) {
-  /*if(!userAuthenticator){
-    res.redirect('/login');
-  } else{*/
     Links.reset().fetch().then(function(links) {
       res.send(200, links.models);
     });
@@ -69,8 +56,7 @@ function(req, res) {
     });
 });
 
-app.post('/signup',
-function(req, res) {
+app.post('/signup', function(req, res) {
   console.log(req.body);
   var username = req.body.username;
   var password = req.body.password;
@@ -95,8 +81,7 @@ app.get('/logout', function(req, res) {
   res.redirect('login');
 });
 
-app.post('/links',
-function(req, res) {
+app.post('/links',function(req, res) {
   var uri = req.body.url;
 
   if (!util.isValidUrl(uri)) {
